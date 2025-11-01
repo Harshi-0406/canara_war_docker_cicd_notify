@@ -22,14 +22,14 @@ if [ -z "$STATUS" ] || [ -z "$JOB_NAME" ] || [ -z "$BUILD_ID" ] || [ -z "$TO_EMA
   exit 1
 fi
 
-# ✅ Install msmtp if missing
+# Install msmtp if missing
 if ! command -v msmtp >/dev/null 2>&1; then
   echo "Installing msmtp & mailutils..." | tee -a "$LOG_FILE"
   sudo apt-get update -y >> "$LOG_FILE" 2>&1
   sudo apt-get install -y msmtp mailutils >> "$LOG_FILE" 2>&1
 fi
 
-# ✅ Configure msmtp
+# Configure msmtp
 cat > ./msmtprc <<EOF
 defaults
 auth           on
