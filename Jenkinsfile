@@ -2,7 +2,7 @@ pipeline {
     agent any
     
     environment {
-        DOCKERHUB_USERNAME = 'nehaswami
+        DOCKERHUB_USERNAME = 'nehaswami'
 '
         DOCKER_IMAGE = "${DOCKERHUB_USERNAME}/canara_sak"
         DOCKER_CONTAINER = 'canara_app_sak'
