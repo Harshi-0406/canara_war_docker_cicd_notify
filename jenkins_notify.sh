@@ -1,8 +1,4 @@
 #!/bin/bash
-# ---------------------------------------------------
-# Jenkins Gmail Notification Script (msmtp version)
-# Designed & Developed by: sak_shetty
-# ---------------------------------------------------
 
 LOG_DIR="./notify_logs"
 mkdir -p "$LOG_DIR"
@@ -22,31 +18,20 @@ if [ -z "$STATUS" ] || [ -z "$JOB_NAME" ] || [ -z "$BUILD_ID" ] || [ -z "$TO_EMA
   exit 1
 fi
 
-# Install msmtp if missing
+# Ensure msmtp is installed
 if ! command -v msmtp >/dev/null 2>&1; then
   echo "Installing msmtp & mailutils..." | tee -a "$LOG_FILE"
   sudo apt-get update -y >> "$LOG_FILE" 2>&1
   sudo apt-get install -y msmtp mailutils >> "$LOG_FILE" 2>&1
 fi
 
-# Configure msmtp
-cat > ./msmtprc <<EOF
-defaults
-auth           on
-tls            on
-tls_starttls   on
-tls_trust_file /etc/ssl/certs/ca-certificates.crt
-account        gmail
-host           smtp.gmail.com
-port           587
-from           $GMAIL_USER
-user           $GMAIL_USER
-password       $GMAIL_APP_PASS
-account default : gmail
-logfile        $LOG_FILE
-EOF
+# ✅ Use Jenkins global config instead of writing a local one
+MSMTP_CONFIG="/var/lib/jenkins/.msmtprc"
 
-chmod 600 ./msmtprc
+if [ ! -f "$MSMTP_CONFIG" ]; then
+  echo "Error: Jenkins global msmtp config ($MSMTP_CONFIG) not found!" | tee -a "$LOG_FILE"
+  exit 1
+fi
 
 SUBJECT="Jenkins Build - $JOB_NAME (#$BUILD_ID) - $STATUS"
 
@@ -95,7 +80,7 @@ p { font-size:14px; }
 EOF
 )
 
-echo "$EMAIL_CONTENT" | msmtp --file=./msmtprc -a gmail "$TO_EMAIL"
+echo "$EMAIL_CONTENT" | msmtp -a gmail "$TO_EMAIL"
 
 echo "HTML Email sent at $(date)" | tee -a "$LOG_FILE"
 exit 0
